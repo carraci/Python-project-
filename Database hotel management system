@@ -1,0 +1,35 @@
+import sqlite3
+
+# Connect to SQLite database
+conn = sqlite3.connect('hotel_management.db')
+cursor = conn.cursor()
+
+def fetch_all_users():
+    try:
+        # Fetch all users from the database
+        cursor.execute("SELECT * FROM users")
+        users = cursor.fetchall()
+        return users
+    except sqlite3.Error as e:
+        print("Error fetching users:", e)
+        return []
+
+def main():
+    # Fetch all users
+    users = fetch_all_users()
+
+    # Display user information
+    if users:
+        print("All Users:")
+        for user in users:
+            print("ID:", user[0])
+            print("Name:", user[1])
+            print("Phone:", user[2])
+            print("Password:", user[3])
+            print("Gmail:", user[4])
+            print("-----------------------")
+    else:
+        print("No users found.")
+
+if __name__ == "__main__":
+    main()
