@@ -1,0 +1,329 @@
+import tkinter as tk
+from tkinter import messagebox
+import sqlite3
+
+# Create SQLite database
+conn = sqlite3.connect('hotel_management.db')
+cursor = conn.cursor()
+
+# Create User table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        phone TEXT,
+        password TEXT,
+        gmail TEXT
+    )
+''')
+conn.commit()
+
+# Create Hotel table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS hotels (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        room TEXT,
+        address TEXT,
+        phone TEXT,
+        email TEXT,
+        hotel TEXT
+    )
+''')
+conn.commit()
+
+# Create Payment table
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        room TEXT,
+        hotel TEXT,
+        amount TEXT,
+        gst TEXT,
+        checkin TEXT,
+        checkout TEXT
+    )
+''')
+conn.commit()
+
+
+class RegistrationApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Registration Form")
+        self.root.geometry("400x400")
+
+        tk.Label(self.root, text="Name:", bg="red" ,fg="blue").grid(row=0, column=0, sticky=tk.W)
+        self.name_entry = tk.Entry(self.root)
+        self.name_entry.grid(row=0, column=1, pady=5)
+
+        tk.Label(self.root, text="Phone Number:", bg="red" ,fg="blue").grid(row=1, column=0, sticky=tk.W)
+        self.phone_entry = tk.Entry(self.root)
+        self.phone_entry.grid(row=1, column=1, pady=5)
+
+        tk.Label(self.root, text="Password:", bg="red" ,fg="blue").grid(row=2, column=0, sticky=tk.W)
+        self.password_entry = tk.Entry(self.root, show="*")
+        self.password_entry.grid(row=2, column=1, pady=5)
+
+        tk.Label(self.root, text="Gmail:", bg="red" ,fg="blue").grid(row=3, column=0, sticky=tk.W)
+        self.gmail_entry = tk.Entry(self.root)
+        self.gmail_entry.grid(row=3, column=1, pady=5)
+
+        self.submit_button = tk.Button(self.root, text="Submit", command=self.submit_registration)
+        self.submit_button.grid(row=4, column=0, columnspan=2, pady=10)
+
+    def isalpha_validation(self, name):
+        try:
+            if not name.isalpha():
+                raise ValueError("Name must contain only alphabetic characters.")
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return False
+
+    def isdigit_validation(self, value, field_name):
+        try:
+            if not value.isdigit():
+                raise ValueError(f"{field_name} must contain only numeric characters.")
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return False
+
+    def submit_registration(self):
+        name = self.name_entry.get()
+        phone_number = self.phone_entry.get()
+        password = self.password_entry.get()
+        gmail = self.gmail_entry.get()
+
+        if (
+            self.isalpha_validation(name)
+            and self.isdigit_validation(phone_number, "Phone Number")
+        ):
+            # Store user information in the database
+            cursor.execute("INSERT INTO users (name, phone, password, gmail) VALUES (?, ?, ?, ?)",
+                           (name, phone_number, password, gmail))
+            conn.commit()
+
+            messagebox.showinfo("Success", "User registration successful!")
+            self.root.withdraw()  # Hide the registration window
+            login_window.deiconify()  # Show the login window
+
+
+class LoginApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Login System")
+
+        tk.Label(self.root, text="Username:",bg="red" ,fg="blue").grid(row=0, column=0, pady=5, padx=10, sticky="e")
+        self.username_entry = tk.Entry(self.root, show="*")
+        self.username_entry.grid(row=0, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Password:", bg="red" ,fg="blue").grid(row=1, column=0, pady=5, padx=10, sticky="e")
+        self.password_entry = tk.Entry(self.root, show="*")
+        self.password_entry.grid(row=1, column=1, pady=5, padx=10)
+
+        self.submit_button = tk.Button(self.root, text="Submit", command=self.submit_login)
+        self.submit_button.grid(row=2, column=1, pady=10)
+
+        self.back_button = tk.Button(self.root, text="Back", command=self.go_back)
+        self.back_button.grid(row=2, column=0, pady=10)
+
+    def submit_login(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+
+        cursor.execute("SELECT * FROM users WHERE name=? AND password=?", (username, password))
+        user = cursor.fetchone()
+
+        if not user:
+            messagebox.showerror("Error", "Invalid username or password.")
+        else:
+            messagebox.showinfo("Success", "User login successfully!")
+            self.root.withdraw()  # Hide the login window
+            hotel_registration_window.deiconify()  # Show the hotel registration window
+
+    def go_back(self):
+        self.root.withdraw()
+        registration_window.deiconify()
+
+
+class HotelRegistrationApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Hotel Registration Form")
+        self.root.geometry("400x400")
+
+        tk.Label(self.root, text="Username:", bg="red" ,fg="blue").grid(row=0, column=0, pady=5, padx=10, sticky=tk.E)
+        self.username_entry = tk.Entry(self.root)
+        self.username_entry.grid(row=0, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="person No:", bg="red" ,fg="blue").grid(row=1, column=0, pady=5, padx=10, sticky=tk.E)
+        self.room_entry = tk.Entry(self.root)
+        self.room_entry.grid(row=1, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="User Address:", bg="red" ,fg="blue").grid(row=2, column=0, pady=5, padx=10, sticky=tk.E)
+        self.address_entry = tk.Entry(self.root)
+        self.address_entry.grid(row=2, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Phone Number:", bg="red" ,fg="blue").grid(row=3, column=0, pady=5, padx=10, sticky=tk.E)
+        self.phone_entry = tk.Entry(self.root)
+        self.phone_entry.grid(row=3, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Email ID:", bg="red" ,fg="blue").grid(row=4, column=0, pady=5, padx=10, sticky=tk.E)
+        self.email_entry = tk.Entry(self.root)
+        self.email_entry.grid(row=4, column=1, pady=5, padx=10)
+
+        self.submit_button = tk.Button(self.root, text="Submit", command=self.submit_hotel_registration)
+        self.submit_button.grid(row=6, column=0, columnspan=2, pady=10)
+
+        self.back_button = tk.Button(self.root, text="Back", command=self.go_back)
+        self.back_button.grid(row=6, column=0, pady=10)
+
+    def isalpha_validation(self, value, field_name):
+        try:
+            if not value.isalpha():
+                raise ValueError(f"{field_name} must contain only alphabetic characters.")
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return False
+
+    def isdigit_validation(self, value, field_name):
+        try:
+            if not value.isdigit():
+                raise ValueError(f"{field_name} must contain only numeric characters.")
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return False
+
+    def submit_hotel_registration(self):
+        username = self.username_entry.get()
+        room = self.room_entry.get()
+        address = self.address_entry.get()
+        phone = self.phone_entry.get()
+        email = self.email_entry.get()
+
+        if (
+            self.isalpha_validation(username, "Username")
+            and self.isdigit_validation(room, "person No")
+            and self.isalpha_validation(address, "User Address")
+            and self.isdigit_validation(phone, "Phone Number")
+        ):
+            # Store hotel information in the database
+            cursor.execute(
+                "INSERT INTO hotels (username, room, address, phone, email) VALUES (?, ?, ?, ?, ?)",
+                (username, room, address, phone, email),
+            )
+            conn.commit()
+
+            messagebox.showinfo("Success", "Hotel registration successful!")
+            self.root.withdraw()  # Hide the hotel registration window
+            payment_window.deiconify()  # Show the payment window
+
+    def go_back(self):
+        self.root.withdraw()
+        login_window.deiconify()
+
+
+class PaymentApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Payment Form")
+        self.root.geometry("400x400")
+
+        tk.Label(self.root, text="User Name:").grid(row=0, column=0, pady=5, padx=10, sticky=tk.E)
+        self.username_entry = tk.Entry(self.root)
+        self.username_entry.grid(row=0, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Room No:").grid(row=1, column=0, pady=5, padx=10, sticky=tk.E)
+        self.room_entry = tk.Entry(self.root)
+        self.room_entry.grid(row=1, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Hotel Name:").grid(row=2, column=0, pady=5, padx=10, sticky=tk.E)
+        self.hotel_entry = tk.Entry(self.root)
+        self.hotel_entry.grid(row=2, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Amount:").grid(row=3, column=0, pady=5, padx=10, sticky=tk.E)
+        self.amount_entry = tk.Entry(self.root)
+        self.amount_entry.grid(row=3, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Check-In Time:").grid(row=5, column=0, pady=5, padx=10, sticky=tk.E)
+        self.checkin_entry = tk.Entry(self.root)
+        self.checkin_entry.grid(row=5, column=1, pady=5, padx=10)
+
+        tk.Label(self.root, text="Check-Out Time:").grid(row=6, column=0, pady=5, padx=10, sticky=tk.E)
+        self.checkout_entry = tk.Entry(self.root)
+        self.checkout_entry.grid(row=6, column=1, pady=5, padx=10)
+
+        self.submit_button = tk.Button(self.root, text="Submit", command=self.submit_payment)
+        self.submit_button.grid(row=7, column=0, columnspan=2, pady=10)
+
+        self.back_button = tk.Button(self.root, text="Back", command=self.go_back)
+        self.back_button.grid(row=7, column=0, pady=10)
+
+    def isalpha_validation(self, value, field_name):
+        try:
+            if not value.isalpha():
+                raise ValueError(f"{field_name} must contain only alphabetic characters.")
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return False
+
+    def isdigit_validation(self, value, field_name):
+        try:
+            if not value.isdigit():
+                raise ValueError(f"{field_name} must contain only numeric characters.")
+            return True
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return False
+
+    def submit_payment(self):
+        username = self.username_entry.get()
+        room = self.room_entry.get()
+        hotel = self.hotel_entry.get()
+        amount = self.amount_entry.get()
+        checkin = self.checkin_entry.get()
+        checkout = self.checkout_entry.get()
+
+        if (
+            self.isalpha_validation(username, "User Name")
+            and self.isdigit_validation(room, "Room No")
+            and self.isalpha_validation(hotel, "Hotel Name")
+            and self.isdigit_validation(amount, "Amount")
+        ):
+            # Store payment information in the database
+            cursor.execute(
+                "INSERT INTO payments (username, room, hotel, amount, checkin, checkout) VALUES (?, ?, ?, ?, ?, ?)",
+                (username, room, hotel, amount, checkin, checkout),
+            )
+            conn.commit()
+
+            messagebox.showinfo("Success", "Payment submitted. Have a nice day, sir!")
+
+    def go_back(self):
+        self.root.withdraw()
+        hotel_registration_window.deiconify()
+
+
+if __name__ == "__main__":
+    registration_window = tk.Tk()
+    registration_app = RegistrationApp(registration_window)
+
+    login_window = tk.Toplevel(registration_window)
+    login_app = LoginApp(login_window)
+    login_window.withdraw()
+
+    hotel_registration_window = tk.Toplevel(registration_window)
+    hotel_registration_app = HotelRegistrationApp(hotel_registration_window)
+    hotel_registration_window.withdraw()
+
+    payment_window = tk.Toplevel(registration_window)
+    payment_app = PaymentApp(payment_window)
+    payment_window.withdraw()
+
+    registration_window.mainloop()
